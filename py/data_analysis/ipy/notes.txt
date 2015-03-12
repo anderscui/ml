@@ -1,0 +1,15 @@
+
+P45
+Act without doing, work without effort. Think of the small as large and the few as many. Confront the difficult while it is still easy; accomplish the great task by a series of small acts. The Master never reaches for the great; thus achieves greatness. (ch. 63)
+
+为无为，事无事，味无味。
+大小多少，报怨以德。
+图难于其易，为大于其细。
+天下难事，必作于易；天下大事，必作于细。
+
+IPython project began in 2001 as Fernando Perez's side project to make a better interactive Python interpreter.
+
+While it does not provide any computational or data analytical tools by itself, IPython is designed from the ground
+up to maximize your productivity in both interactive computing and software development.
+
+It encourages an execute-explore workflow instead of the typical edit-compile-run workflow.

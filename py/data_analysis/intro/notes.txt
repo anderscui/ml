@@ -1,0 +1,7 @@
+The tasks generally fall into a number of diff broad groups:
+1. Interacting with the outside world
+2. Preparation
+3. Transformation
+4. Modeling and computation
+5. Presentation
+
