@@ -75,6 +75,34 @@ def top_matches(prefs, person, n=5, similarity=sim_pearson):
     return scores[:n]
 
 
+def get_recommendations(prefs, person, similarity=sim_pearson):
+
+    totals = {}
+    sim_sums = {}
+
+    for other in prefs:
+        if other == person:
+            continue
+
+        sim = similarity(prefs, person, other)
+        if sim <= 0:
+            continue
+
+        for item in prefs[other]:
+
+            if item not in prefs[person] or prefs[person][item] == 0:
+                totals.setdefault(item, 0)
+                totals[item] += prefs[other][item]*sim
+
+                sim_sums.setdefault(item, 0)
+                sim_sums[item] += sim
+
+    # normalize scores
+    rankings = [(total/sim_sums[item], item) for item, total in totals.items()]
+    rankings.sort(reverse=True)
+    return rankings
+
+
 if __name__ == '__main__':
 
     # Euclidean distance
@@ -88,3 +116,7 @@ if __name__ == '__main__':
     # find similar users
     print(top_matches(critics, 'Toby', 3))
     print(top_matches(critics, 'Toby', 3, sim_distance))
+
+    # get recommendations for a specific user
+    print(get_recommendations(critics, 'Toby'))
+    print(get_recommendations(critics, 'Toby', sim_distance))
