@@ -1,2 +1,4 @@
 
 py/.idea/*
+py/recommenderSys/data/ratings.dat
+py/recommenderSys/data/movies.dat

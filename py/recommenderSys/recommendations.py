@@ -11,7 +11,7 @@ critics = {
     'Gene Seymour': {'Lady in the Water': 3.0, 'Snake on a Plane': 3.5,
                      'Just My Luck': 1.5, 'Superman Returns': 5.0, 'You, Me and Dupree': 3.5,
                      'The Night Listener': 3.0},
-    'Mickael Phillips': {'Lady in the Water': 2.5, 'Snake on a Plane': 3.0,
+    'Michael Phillips': {'Lady in the Water': 2.5, 'Snake on a Plane': 3.0,
                          'Superman Returns': 3.5, 'The Night Listener': 4.0},
     'Claudia Puig': {'Snake on a Plane': 3.5, 'Just My Luck': 3.0,
                      'Superman Returns': 4.0, 'You, Me and Dupree': 2.5,
@@ -70,13 +70,20 @@ def sim_pearson(prefs, p1, p2):
 
 def top_matches(prefs, person, n=5, similarity=sim_pearson):
     scores = [(similarity(prefs, person, other), other) for other in prefs if other != person]
-    scores.sort()
-    scores.reverse()
-    return scores[:n]
+    scores.sort(reverse=True)
+    return scores[0:n]
 
 
 def get_recommendations(prefs, person, similarity=sim_pearson):
 
+    """
+    Implement simple userCF.
+
+    :param prefs: preference data including each user for each movie
+    :param person:  find recommendations for
+    :param similarity: similarity method
+    :return: a list of recommendations
+    """
     totals = {}
     sim_sums = {}
 
@@ -85,12 +92,15 @@ def get_recommendations(prefs, person, similarity=sim_pearson):
             continue
 
         sim = similarity(prefs, person, other)
+        # if the two are not similar, ignore it.
         if sim <= 0:
             continue
 
         for item in prefs[other]:
 
-            if item not in prefs[person] or prefs[person][item] == 0:
+            #if item not in prefs[person] or prefs[person][item] == 0:
+            # has not seen or rated
+            if item not in prefs[person]:
                 totals.setdefault(item, 0)
                 totals[item] += prefs[other][item]*sim
 
@@ -103,20 +113,126 @@ def get_recommendations(prefs, person, similarity=sim_pearson):
     return rankings
 
 
+def transform_prefs(prefs):
+    result = {}
+    for p in prefs:
+        for item in prefs[p]:
+            result.setdefault(item, {})
+
+            result[item][p] = prefs[p][item]
+
+    return result
+
+
+def calc_similar_items(prefs, n=10):
+
+    result = {}
+
+    item_prefs = transform_prefs(prefs)
+    c = 0
+    for item in item_prefs:
+        c += 1
+        if c % 100 == 0:
+            print('{0} / {1}'.format(c, len(item_prefs)))
+        matches = top_matches(item_prefs, item, n=n, similarity=sim_distance)
+        result[item] = matches
+    return result
+
+
+def get_recommended_items(prefs, item_match, user):
+    """
+    Implement simple itemCF.
+
+    :param prefs: user preferences.
+    :param item_match: similar items dataset.
+    :param user: recommend for
+    """
+    user_ratings = prefs[user]
+
+    scores = {}
+    total_sim = {}
+
+    for (item, rating) in user_ratings.items():
+        for (similarity, item2) in item_match[item]:
+            # rated before, ignore it.
+            if item2 in user_ratings:
+                continue
+
+            scores.setdefault(item2, 0)
+            scores[item2] += similarity * rating
+
+            total_sim.setdefault(item2, 0)
+            total_sim[item2] += similarity
+
+    rankings = [(score/total_sim[item], item) for item, score in scores.items()]
+    rankings.sort(reverse=True)
+
+    return rankings
+
+
+def load_movie_lens():
+
+    movies = {}
+    for line in open('./data/movies.dat'):
+        (mid, mtitle) = line.split('::')[0:2]
+        movies[mid] = mtitle
+
+    print('{0} movies'.format(len(movies)))
+
+    prefs = {}
+    for line in open('./data/ratings.dat'):
+        (uid, mid, rating, ts) = line.split('::')
+        prefs.setdefault(uid, {})
+        prefs[uid][movies[mid]] = float(rating)
+
+    return prefs
+
+
+# if __name__ == '__main__':
+#
+#     # Euclidean distance
+#     print(sim_distance(critics, 'Lisa Rose', 'Gene Seymour'))
+#     print(sim_distance(critics, 'Lisa Rose', 'Michael Phillips'))
+#
+#     # Pearson correlation
+#     print(sim_pearson(critics, 'Lisa Rose', 'Gene Seymour'))
+#     print(sim_pearson(critics, 'Lisa Rose', 'Michael Phillips'))
+#
+#     # find similar users
+#     print(top_matches(critics, 'Toby', 3))
+#     print(top_matches(critics, 'Toby', 3, sim_distance))
+#
+#     # get recommendations for a specific user
+#     print(get_recommendations(critics, 'Toby'))
+#     print(get_recommendations(critics, 'Toby', sim_distance))
+#
+#     movies = transform_prefs(critics)
+#     # item similarity
+#     print('item similarity')
+#     print(movies)
+#     print(top_matches(movies, 'Superman Returns'))
+#     # print(top_matches(movies, 'Superman Returns', similarity=sim_distance))
+#
+#     # 'recommend' reviewers
+#     print(get_recommendations(movies, 'Just My Luck'))
+#
+#     # itemCF
+#     item_similarities = calc_similar_items(critics)
+#     print(item_similarities)
+#     print(get_recommended_items(critics, item_similarities, 'Toby'))
+
+
 if __name__ == '__main__':
+    # for MovieLens
+    prefs = load_movie_lens()
+    # print(prefs['87'])
+    # print(len(prefs))
 
-    # Euclidean distance
-    print(sim_distance(critics, 'Lisa Rose', 'Gene Seymour'))
-    print(sim_distance(critics, 'Lisa Rose', 'Mickael Phillips'))
+    # UserCF
+    user_recommended = get_recommendations(prefs, '87')[:15]
+    print(user_recommended)
 
-    # Pearson correlation
-    print(sim_pearson(critics, 'Lisa Rose', 'Gene Seymour'))
-    print(sim_pearson(critics, 'Lisa Rose', 'Mickael Phillips'))
-
-    # find similar users
-    print(top_matches(critics, 'Toby', 3))
-    print(top_matches(critics, 'Toby', 3, sim_distance))
-
-    # get recommendations for a specific user
-    print(get_recommendations(critics, 'Toby'))
-    print(get_recommendations(critics, 'Toby', sim_distance))
+    # ItemCF
+    item_sim = calc_similar_items(prefs, n=50)
+    item_recommended = get_recommended_items(prefs, item_sim, '87')[:15]
+    print(item_recommended)
