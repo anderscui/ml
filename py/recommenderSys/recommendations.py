@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 from math import sqrt
+import datetime
 
+from common.persistence import to_pickle, from_pickle
 
 # A dict of movie critics and their ratings of a small set of movies.
 critics = {
@@ -177,13 +179,15 @@ def load_movie_lens():
         (mid, mtitle) = line.split('::')[0:2]
         movies[mid] = mtitle
 
-    print('{0} movies'.format(len(movies)))
+    print(len(movies))
 
     prefs = {}
     for line in open('./data/ratings.dat'):
         (uid, mid, rating, ts) = line.split('::')
         prefs.setdefault(uid, {})
         prefs[uid][movies[mid]] = float(rating)
+
+    print(len(prefs))
 
     return prefs
 
@@ -228,11 +232,16 @@ if __name__ == '__main__':
     # print(prefs['87'])
     # print(len(prefs))
 
-    # UserCF
-    user_recommended = get_recommendations(prefs, '87')[:15]
-    print(user_recommended)
-
+    # # UserCF
+    # user_recommended = get_recommendations(prefs, '87')[:15]
+    # print(user_recommended)
+    #
     # ItemCF
-    item_sim = calc_similar_items(prefs, n=50)
+    # print(datetime.datetime.now())
+    # item_sim = calc_similar_items(prefs, n=50)
+    # to_pickle(item_sim, 'item_sim.pkl')
+    # print(datetime.datetime.now())
+
+    item_sim = from_pickle('item_sim.pkl')
     item_recommended = get_recommended_items(prefs, item_sim, '87')[:15]
     print(item_recommended)
