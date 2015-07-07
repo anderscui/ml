@@ -243,5 +243,5 @@ if __name__ == '__main__':
     # print(datetime.datetime.now())
 
     item_sim = from_pickle('item_sim.pkl')
-    item_recommended = get_recommended_items(prefs, item_sim, '87')[:15]
+    item_recommended = get_recommended_items(prefs, item_sim, '101')[:5]
     print(item_recommended)
