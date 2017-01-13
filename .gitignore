@@ -5,3 +5,4 @@ py/recommenderSys/data/movies.dat
 py/scikit/dim_reduction/att_faces/*
 *.pyc
 ad.data
+.idea/*
